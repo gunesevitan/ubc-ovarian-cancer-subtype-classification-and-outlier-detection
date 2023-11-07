@@ -4,6 +4,7 @@ import logging
 
 
 # Project structure
+HDD = Path('/media/gunes/d0c7ecce-dc82-4c90-a953-1dc746490bf5/')
 ROOT = Path('/home/gunes/Desktop/Kaggle/ubc-ovarian-cancer-subtype-classification-and-outlier-detection')
 DATA = ROOT / 'data'
 LOGS = ROOT / 'logs'
