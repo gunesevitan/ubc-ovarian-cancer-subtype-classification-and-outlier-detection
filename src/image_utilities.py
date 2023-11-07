@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 
 
-
 def resize_with_aspect_ratio(image, longest_edge):
 
     """
