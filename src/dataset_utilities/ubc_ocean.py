@@ -14,14 +14,14 @@ import image_utilities
 if __name__ == '__main__':
 
     raw_image_directory = settings.HDD / 'ubc_ocean' / 'train_images'
-    df_train = pd.read_csv(settings.DATA / 'raw_datasets' / 'ubc_ocean' / 'train.csv')
+    df = pd.read_csv(settings.DATA / 'raw_datasets' / 'ubc_ocean' / 'train.csv')
 
     output_directory = settings.DATA / 'model_datasets' / 'ubc_ocean' / 'images'
     output_directory.mkdir(parents=True, exist_ok=True)
 
     wsi_longest_edge = 4096
 
-    for idx, row in tqdm(df_train.iterrows(), total=df_train.shape[0]):
+    for idx, row in tqdm(df.iterrows(), total=df.shape[0]):
 
         image_type = 'TMA' if row['is_tma'] else 'WSI'
 
@@ -55,3 +55,7 @@ if __name__ == '__main__':
         settings.logger.info(f'Image ID {row["image_id"]} - Raw Shape: {raw_image_shape} Processed Shape: {processed_image_shape}')
 
         cv2.imwrite(str(output_directory / f'{row["image_id"]}.png'), image)
+
+    df = df.drop(columns=['image_height', 'image_width'])
+    df['image_path'] = df['image_id'].apply(lambda image_id: output_directory / f'{image_id}.png')
+    df.to_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'metadata.csv', index=False)
