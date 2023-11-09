@@ -98,3 +98,43 @@ def get_largest_contour(image, threshold):
     bounding_box = [x1, y1, min(x2, image.shape[1]), min(y2, image.shape[0])]
 
     return bounding_box
+
+
+def create_instances(image, n_instances, instance_size):
+
+    """
+    Create instances from the given image
+
+    Parameters
+    ----------
+    image: numpy.ndarray of shape (height, width, 3)
+        Image array
+
+    n_instances: int
+        Number of instances
+
+    instance_size:
+        Instance height and width
+
+    Returns
+    -------
+    image: numpy.ndarray of shape (n_instances, instance_size, instance_size, channel)
+        Image instances array
+    """
+
+    height, width, channel = image.shape
+    pad_height, pad_width = (instance_size - height % instance_size) % instance_size, (instance_size - width % instance_size) % instance_size
+    padding = [[pad_height // 2, pad_height - pad_height // 2], [pad_width // 2, pad_width - pad_width // 2], [0, 0]]
+    image = np.pad(image, padding, mode='constant', constant_values=255)
+    image = image.reshape(image.shape[0] // instance_size, instance_size, image.shape[1] // instance_size, instance_size, channel)
+    image = image.transpose(0, 2, 1, 3, 4).reshape(-1, instance_size, instance_size, channel)
+
+    if len(image) < n_instances:
+        padding = [[0, n_instances - len(image)], [0, 0], [0, 0], [0, 0]]
+        image = np.pad(image, padding, mode='constant', constant_values=255)
+
+    # Sort instances by their sums and retrieve top n instances
+    sorting_idx = np.argsort(image.reshape(image.shape[0], -1).sum(-1))[:n_instances]
+    image = image[sorting_idx]
+
+    return image
