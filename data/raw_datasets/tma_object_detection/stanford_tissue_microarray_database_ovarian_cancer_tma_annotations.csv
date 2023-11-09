@@ -1,0 +1,135 @@
+label_name,bbox_x,bbox_y,bbox_width,bbox_height,image_name,image_width,image_height
+object,0,15,1504,1324,1043_1_ovary_carcinoma adeno.jpg,1504,1440
+object,0,0,1433,1299,1294_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,197,1504,1201,169_1_ovary_seminoma dysgerminoma.jpg,1504,1440
+object,65,35,1439,1337,2011_1_ovary_carcinoma endometrioid.jpg,1504,1440
+object,30,0,1474,1254,2011_2_ovary_carcinoma endometrioid.jpg,1504,1440
+object,28,0,1476,1289,2011_3_ovary_carcinoma endometrioid.jpg,1504,1440
+object,25,0,1479,1284,2011_4_ovary_carcinoma endometrioid.jpg,1504,1440
+object,0,0,1504,1440,2011_5_ovary_carcinoma endometrioid.jpg,1504,1440
+object,0,0,1504,1374,2011_6_ovary_carcinoma endometrioid.jpg,1504,1440
+object,4,0,1500,1420,2011_7_ovary_carcinoma endometrioid.jpg,1504,1440
+object,0,0,1504,1310,2011_8_ovary_carcinoma endometrioid.jpg,1504,1440
+object,0,0,1504,1214,446_1_ovary_carcinoma mucinous.jpg,1504,1440
+object,0,0,1504,1280,454_1_ovary_carcinoma clear cell.jpg,1504,1440
+object,0,0,1504,1199,455_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,0,1504,1207,457_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,0,1504,1297,458_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,115,7,1389,1258,459_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,25,0,1479,1269,464_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,339,0,1165,1045,464_2_ovary_carcinoma papillary serous.jpg,1504,1440
+object,50,0,1454,1310,464_3_ovary_carcinoma papillary serous.jpg,1504,1440
+object,54,0,1450,1243,464_4_ovary_carcinoma papillary serous.jpg,1504,1440
+object,49,0,1455,1361,464_5_ovary_carcinoma papillary serous.jpg,1504,1440
+object,43,0,1461,1240,464_6_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,48,1465,1236,464_7_ovary_carcinoma papillary serous.jpg,1504,1440
+object,3,0,1501,1321,464_8_ovary_carcinoma papillary serous.jpg,1504,1440
+object,25,0,1479,1304,464_9_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,20,1504,1256,467_1_ovary_carcinoma clear cell.jpg,1504,1440
+object,0,0,1504,1231,468_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,10,11,1494,1308,469_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,71,2,1433,1282,471_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,90,1504,1249,472_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,9,1504,1286,474_1_ovary_carcinoma mucinous.jpg,1504,1440
+object,0,163,1417,1231,479_1_ovary_carcinoma adeno mucinous.jpg,1504,1440
+object,23,48,1481,1209,480_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,21,51,1483,1260,481_1_ovary_carcinoma clear cell.jpg,1504,1440
+object,52,0,1452,1214,483_1_ovary_carcinoma adeno.jpg,1504,1440
+object,0,2,1504,1288,485_1_ovary_carcinoma mucinous.jpg,1504,1440
+object,0,28,1391,1280,487_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,10,33,1494,1280,488_1_ovary_carcinoma endometrioid.jpg,1504,1440
+object,0,127,1448,1247,489_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,0,1417,1227,490_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,21,75,1483,1218,491_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,0,1481,1196,493_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,53,1504,1240,494_1_ovary_carcinoma adeno.jpg,1504,1440
+object,0,0,1340,1210,495_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,0,1504,1238,496_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,68,1478,1212,497_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,59,1439,1227,499_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,0,1504,1254,500_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,89,0,1385,1225,502_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,0,33,1487,1225,503_1_ovary_carcinoma adeno.jpg,1504,1440
+object,0,13,1504,1308,504_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,60,0,1444,1277,505_1_ovary_carcinoma endometrioid.jpg,1504,1440
+object,0,33,1504,1236,506_1_ovary_carcinoma endometrioid.jpg,1504,1440
+object,0,28,1426,1251,527_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,67,0,1437,1212,6208_1_ovary_lymphoma precursor B lymphoblastic.jpg,1504,1440
+object,116,0,1388,1218,6208_2_ovary_lymphoma precursor B lymphoblastic.jpg,1504,1440
+object,128,0,1376,1240,6208_3_ovary_lymphoma precursor B lymphoblastic.jpg,1504,1440
+object,116,0,1388,1240,6208_4_ovary_lymphoma precursor B lymphoblastic.jpg,1504,1440
+object,0,92,1463,1348,6208_5_ovary_lymphoma precursor B lymphoblastic.jpg,1504,1440
+object,49,15,1455,1256,6208_6_ovary_lymphoma precursor B lymphoblastic.jpg,1504,1440
+object,128,0,1322,1262,6208_7_ovary_lymphoma precursor B lymphoblastic.jpg,1504,1440
+object,100,44,1404,1311,622_1_ovary_carcinoma papillary serous.jpg,1504,1440
+object,12,40,1492,1251,692_1_ovary_carcinoma clear cell.jpg,1504,1440
+object,12,0,1492,1297,9301_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,14,0,1490,1304,9301_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,52,0,1452,1350,9301_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,26,29,1478,1315,9301_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,52,1863,1842,9301_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,8,0,1496,1341,9301_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1372,9302_2_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,49,0,1455,1258,9302_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1251,9302_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1277,9302_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,58,0,1446,1343,9302_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,125,1910,1758,9302_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,0,0,1504,1300,9302_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,89,0,1415,1376,9303_2_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,94,0,1410,1212,9303_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,10,0,1494,1341,9303_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,82,0,1422,1332,9303_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,29,1504,1284,9303_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,3,172,1784,1755,9303_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,54,0,1450,1304,9303_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1313,9304_2_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1243,9304_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1282,9304_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,34,0,1470,1311,9304_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1266,9304_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,144,1836,1829,9304_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,32,0,1472,1361,9304_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,41,0,1463,1251,9306_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,85,0,1419,1311,9306_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1266,9306_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,69,0,1435,1289,9306_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1300,9306_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,131,1758,1789,9306_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,96,0,1408,1304,9306_9_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,30,0,1474,1333,9307_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1376,9307_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1326,9307_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1376,9307_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1878,2001,9307_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,0,0,1504,1414,9307_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,30,0,1474,1313,9308_2_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,38,0,1466,1414,9308_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1403,9308_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,14,0,1490,1262,9308_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1416,9308_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,10,1802,2011,9308_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,0,0,1504,1385,9308_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,959,9310_2_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,39,0,1465,1365,9310_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1313,9310_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,50,0,1454,1321,9310_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,18,1504,1357,9310_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,94,222,1849,1821,9310_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,0,0,1504,1321,9310_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1348,9312_2_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,52,0,1452,1322,9312_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1275,9312_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,47,0,1457,1350,9312_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1436,9312_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,138,1797,1868,9312_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,162,0,1342,1275,9312_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,36,0,1468,1372,9313_2_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1232,9313_3_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1207,9313_4_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,82,0,1422,1207,9313_5_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1400,9313_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,141,1855,1810,9313_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
+object,0,0,1504,1302,9313_8_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,0,1504,1361,9314_6_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,1504,1440
+object,0,240,1750,1735,9314_7_ovary_fibroma of ovary spindle cell fibroma of ovary.jpg,2048,2048
