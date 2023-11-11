@@ -3,11 +3,11 @@ import torch.nn as nn
 
 class ClassificationHead(nn.Module):
 
-    def __init__(self, input_dimensions):
+    def __init__(self, input_dimensions, cancer_output_dimensions):
 
         super(ClassificationHead, self).__init__()
 
-        self.cancer_head = nn.Linear(input_dimensions, 5, bias=True)
+        self.cancer_head = nn.Linear(input_dimensions, cancer_output_dimensions, bias=True)
 
     def forward(self, x):
 
