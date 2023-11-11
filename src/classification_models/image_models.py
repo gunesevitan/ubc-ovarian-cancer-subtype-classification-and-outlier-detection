@@ -6,11 +6,11 @@ import timm
 from heads import ClassificationHead
 
 
-class TimmConvolutionalClassificationModel(nn.Module):
+class TimmImageClassificationModel(nn.Module):
 
-    def __init__(self, model_name, pretrained, backbone_args, pooling_type, dropout_rate, freeze_parameters):
+    def __init__(self, model_name, pretrained, backbone_args, pooling_type, dropout_rate, freeze_parameters, head_args):
 
-        super(TimmConvolutionalClassificationModel, self).__init__()
+        super(TimmImageClassificationModel, self).__init__()
 
         self.backbone = timm.create_model(
             model_name=model_name,
@@ -27,7 +27,7 @@ class TimmConvolutionalClassificationModel(nn.Module):
 
         self.pooling_type = pooling_type
         self.dropout = nn.Dropout(dropout_rate) if dropout_rate > 0 else nn.Identity()
-        self.head = ClassificationHead(input_dimensions=input_features)
+        self.head = ClassificationHead(input_dimensions=input_features, **head_args)
 
     def forward(self, x):
 
