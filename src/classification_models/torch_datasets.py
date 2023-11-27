@@ -6,9 +6,11 @@ from torch.utils.data import Dataset
 
 class ImageClassificationDataset(Dataset):
 
-    def __init__(self, image_paths, targets=None, transforms=None):
+    def __init__(self, image_paths, crop_size, n_crop, targets=None, transforms=None):
 
         self.image_paths = image_paths
+        self.crop_size = crop_size
+        self.n_crop = n_crop
         self.targets = targets
         self.transforms = transforms
 
@@ -37,113 +39,53 @@ class ImageClassificationDataset(Dataset):
 
         Returns
         -------
-        image: torch.FloatTensor of shape (channel, height, width)
-            Image tensor
+        images: torch.FloatTensor of shape (n_crops, channel, height, width)
+            Images tensor
 
-        target: torch.Tensor
-            Target tensor
+        targets: torch.Tensor of shape (n_crops, 1)
+            Targets tensor
         """
 
         image = cv2.imread(self.image_paths[idx])
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-        if self.targets is not None:
-
-            target = self.targets[idx]
-            target = torch.as_tensor(target, dtype=torch.long)
-
-            if self.transforms is not None:
-                image = self.transforms(image=image)['image'].float()
-            else:
-                image = torch.as_tensor(image, dtype=torch.float)
-
-            return image, target
-
-        else:
-
-            if self.transforms is not None:
-                image = self.transforms(image=image)['image'].float()
-            else:
-                image = torch.as_tensor(image, dtype=torch.float)
-
-            return image
-
-
-class InstanceClassificationDataset(Dataset):
-
-    def __init__(self, image_paths, n_instances, targets=None, transforms=None):
-
-        self.image_paths = image_paths
-        self.n_instances = n_instances
-        self.targets = targets
-        self.transforms = transforms
-
-    def __len__(self):
-
-        """
-        Get the length the dataset
-
-        Returns
-        -------
-        length: int
-            Length of the dataset
-        """
-
-        return len(self.image_paths)
-
-    def __getitem__(self, idx):
-
-        """
-        Get the idxth element in the dataset
-
-        Parameters
-        ----------
-        idx: int
-            Index of the sample (0 <= idx < length of the dataset)
-
-        Returns
-        -------
-        images: torch.FloatTensor of shape (channel, n_instance, height, width)
-            Image tensor
-
-        targets: torch.Tensor
-            Target tensor
-        """
-
         images = []
-        for image_path in self.image_paths[idx][:self.n_instances]:
-            image = cv2.imread(image_path)
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            images.append(image)
+
+        image_height, image_width = image.shape[:2]
+        start_xs = np.random.randint(0, image_width - self.crop_size, self.n_crop)
+        start_ys = np.random.randint(0, image_height - self.crop_size, self.n_crop)
 
         if self.targets is not None:
 
             target = self.targets[idx]
             target = torch.as_tensor(target, dtype=torch.long)
+            targets = []
 
-            if self.transforms is not None:
-                augmentation_inputs = {f'image_{image_idx}': image for image_idx, image in enumerate(images[1:], start=2)}
-                augmentation_inputs.update({'image': images[0]})
-                transformed = self.transforms(**augmentation_inputs)
-                images = torch.stack(list(transformed.values()), dim=1)
-            else:
-                images = [torch.as_tensor(image, dtype=torch.float) for image in images]
-                images = torch.stack(images, dim=1)
-                images = torch.permute(images, dims=(0, 3, 1, 2))
+            for (start_x, start_y) in zip(start_xs, start_ys):
+                image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
+                if self.transforms is not None:
+                    transformed = self.transforms(image=image_crop)
+                    images.append(transformed['image'])
+                else:
+                    images.append(torch.as_tensor(image_crop, dtype=torch.float))
 
-            return images, target
+                targets.append(target)
+
+            images = torch.stack(images, dim=0)
+            targets = torch.stack(targets, dim=0)
+
+            return images, targets
 
         else:
 
-            if self.transforms is not None:
-                augmentation_inputs = {f'image_{image_idx}': image for image_idx, image in enumerate(images[1:], start=2)}
-                augmentation_inputs.update({'image': images[0]})
-                transformed = self.transforms(**augmentation_inputs)
-                images = torch.stack(list(transformed.values()), dim=1)
-            else:
-                images = [torch.as_tensor(image, dtype=torch.float) for image in images]
-                images = torch.stack(images, dim=0)
-                images = torch.permute(images, dims=(0, 3, 1, 2))
+            for (start_x, start_y) in zip(start_xs, start_ys):
+                image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
+                if self.transforms is not None:
+                    transformed = self.transforms(image=image_crop)
+                    images.append(transformed['image'])
+                else:
+                    images = torch.as_tensor(images, dtype=torch.float)
+
+            images = torch.stack(images, dim=0)
 
             return images
 
@@ -189,3 +131,33 @@ def prepare_classification_data(df, dataset_type):
     targets = df['target'].values
 
     return image_paths, targets
+
+
+def collate_fn(batch):
+
+    """
+    Collate function for crop dataset
+
+    Parameters
+    ----------
+    batch: list (batch size) of tuples (images and masks) of tensors (n_crops, 1 or 3, height, width)
+        Batch that the data loader generates on each iteration
+
+    Returns
+    -------
+    images: torch.FloatTensor of shape (batch_size, channel, height, width)
+        Images tensor
+
+    targets: torch.FloatTensor of shape (batch_size, 1)
+        Targets tensor
+    """
+
+    images, targets = zip(*batch)
+    images = torch.cat(images, dim=0)
+    targets = torch.cat(targets, dim=0)
+
+    idx = torch.randperm(images.shape[0])
+    images = images[idx]
+    targets = targets[idx]
+
+    return images, targets
