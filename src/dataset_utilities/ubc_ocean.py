@@ -24,7 +24,7 @@ if __name__ == '__main__':
     output_mask_directory = settings.DATA / 'model_datasets' / 'ubc_ocean' / 'masks'
     output_mask_directory.mkdir(parents=True, exist_ok=True)
 
-    wsi_longest_edge_size = 4096
+    wsi_longest_edge_size = 8192
     metadata = []
 
     for idx, row in tqdm(df.iterrows(), total=df.shape[0]):
@@ -111,7 +111,7 @@ if __name__ == '__main__':
             'cancer_subtype': np.nan,
             'dataset': 'ubc_ocean',
             'image_path': output_image_directory / file_name,
-            'mask_path': str(output_image_directory / file_name) if mask is not None else np.nan
+            'mask_path': str(output_mask_directory / file_name) if mask is not None else np.nan
         })
 
     df_metadata = pd.DataFrame(metadata)
