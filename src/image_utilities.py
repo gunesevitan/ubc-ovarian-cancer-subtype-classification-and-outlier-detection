@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 
-def resize_with_aspect_ratio(image, longest_edge):
+def resize_with_aspect_ratio(image, longest_edge, interpolation=cv2.INTER_LINEAR):
 
     """
     Resize image while preserving its aspect ratio
@@ -15,6 +15,9 @@ def resize_with_aspect_ratio(image, longest_edge):
     longest_edge: int
         Desired number of pixels on the longest edge
 
+    interpolation: int
+        OpenCV interpolation enum
+
     Returns
     -------
     image: numpy.ndarray of shape (resized_height, resized_width, 3)
@@ -23,7 +26,7 @@ def resize_with_aspect_ratio(image, longest_edge):
 
     height, width = image.shape[:2]
     scale = longest_edge / max(height, width)
-    image = cv2.resize(image, dsize=(int(np.ceil(width * scale)), int(np.ceil(height * scale))), interpolation=cv2.INTER_AREA)
+    image = cv2.resize(image, dsize=(int(np.ceil(width * scale)), int(np.ceil(height * scale))), interpolation=interpolation)
 
     return image
 
