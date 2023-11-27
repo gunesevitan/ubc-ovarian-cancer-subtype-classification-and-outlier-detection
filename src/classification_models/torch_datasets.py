@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 
 class ImageClassificationDataset(Dataset):
 
-    def __init__(self, image_paths, crop_size, n_crop, targets=None, transforms=None):
+    def __init__(self, image_paths, crop_size=None, n_crop=None, targets=None, transforms=None):
 
         self.image_paths = image_paths
         self.crop_size = crop_size
@@ -50,9 +50,13 @@ class ImageClassificationDataset(Dataset):
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         images = []
 
-        image_height, image_width = image.shape[:2]
-        start_xs = np.random.randint(0, image_width - self.crop_size, self.n_crop)
-        start_ys = np.random.randint(0, image_height - self.crop_size, self.n_crop)
+        if self.crop_size is not None:
+            image_height, image_width = image.shape[:2]
+            start_xs = np.random.randint(0, image_width - self.crop_size, self.n_crop)
+            start_ys = np.random.randint(0, image_height - self.crop_size, self.n_crop)
+        else:
+            start_xs = [0]
+            start_ys = [0]
 
         if self.targets is not None:
 
@@ -61,7 +65,12 @@ class ImageClassificationDataset(Dataset):
             targets = []
 
             for (start_x, start_y) in zip(start_xs, start_ys):
-                image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
+
+                if self.crop_size is not None:
+                    image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
+                else:
+                    image_crop = image[start_y:start_y + image.shape[0], start_x:start_x + image.shape[1]]
+
                 if self.transforms is not None:
                     transformed = self.transforms(image=image_crop)
                     images.append(transformed['image'])
@@ -78,7 +87,12 @@ class ImageClassificationDataset(Dataset):
         else:
 
             for (start_x, start_y) in zip(start_xs, start_ys):
-                image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
+
+                if self.crop_size is not None:
+                    image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
+                else:
+                    image_crop = image[start_y:start_y + image.shape[0], start_x:start_x + image.shape[1]]
+
                 if self.transforms is not None:
                     transformed = self.transforms(image=image_crop)
                     images.append(transformed['image'])
