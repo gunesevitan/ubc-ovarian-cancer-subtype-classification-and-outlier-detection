@@ -3,16 +3,13 @@ import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
 
 
-def get_classification_transforms(n_instances=None, **transform_parameters):
+def get_classification_transforms(**transform_parameters):
 
     """
     Get transforms for classification dataset
 
     Parameters
     ----------
-    n_instances: int
-        Number of instances
-
     transform_parameters: dict
         Dictionary of transform parameters
 
@@ -21,11 +18,6 @@ def get_classification_transforms(n_instances=None, **transform_parameters):
     transforms: dict
         Transforms for training and inference
     """
-
-    if n_instances is not None:
-        additional_targets = {f'image_{instance_idx}': 'image' for instance_idx in range(2, n_instances + 1)}
-    else:
-        additional_targets = None
 
     training_transforms = A.Compose([
         A.Resize(
@@ -60,7 +52,7 @@ def get_classification_transforms(n_instances=None, **transform_parameters):
             always_apply=True
         ),
         ToTensorV2(always_apply=True)
-    ], additional_targets=additional_targets)
+    ])
 
     inference_transforms = A.Compose([
         A.Resize(
@@ -76,7 +68,7 @@ def get_classification_transforms(n_instances=None, **transform_parameters):
             always_apply=True
         ),
         ToTensorV2(always_apply=True)
-    ], additional_targets=additional_targets)
+    ])
 
     classification_transforms = {'training': training_transforms, 'inference': inference_transforms}
     return classification_transforms
