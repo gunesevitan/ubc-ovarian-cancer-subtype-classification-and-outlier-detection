@@ -7,6 +7,7 @@ import pyvips
 
 sys.path.append('..')
 import settings
+import image_utilities
 
 
 def read_image(image_path):
@@ -37,14 +38,15 @@ def read_image(image_path):
 if __name__ == '__main__':
 
     raw_image_directory = settings.HDD / 'ubc_ocean' / 'train_images'
-    df_crops = pd.read_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'train_crops_info.csv')
+    df_train = pd.read_csv(settings.HDD / 'ubc_ocean' / 'train.csv')
+    df_wsi_crops = pd.read_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'train_crops_info.csv')
 
     output_image_directory = settings.DATA / 'model_datasets' / 'ubc_ocean' / 'images'
     output_image_directory.mkdir(parents=True, exist_ok=True)
 
     metadata = []
 
-    for image_id, df_image in tqdm(df_crops.groupby('image_id'), total=df_crops['image_id'].nunique()):
+    for image_id, df_image in tqdm(df_wsi_crops.groupby('image_id'), total=df_wsi_crops['image_id'].nunique()):
 
         image = read_image(str(raw_image_directory / f'{image_id}.png'))
 
@@ -63,10 +65,31 @@ if __name__ == '__main__':
             cv2.imwrite(image_path, image_crop)
 
             metadata.append({
-                'image_id': f'{image_id}_{crop_id}',
+                'image_id': image_id,
+                'crop_id': crop_id,
                 'label': row['label'],
+                'image_type': 'wsi',
                 'image_path': image_path
             })
 
+    for idx, row in tqdm(df_train.loc[df_train['is_tma']].iterrows(), total=df_train['is_tma'].sum()):
+
+        image_id = row['image_id']
+        image_path = str(output_image_directory / f'{image_id}_0.png')
+
+        image = cv2.imread(str(raw_image_directory / f'{image_id}.png'))
+        # Drop low standard deviation rows and columns (white areas with less tissue)
+        image = image_utilities.drop_low_std(image=image, threshold=10)
+
+        cv2.imwrite(image_path, image)
+
+        metadata.append({
+            'image_id': image_id,
+            'crop_id': 0,
+            'label': row['label'],
+            'image_type': 'tma',
+            'image_path': image_path
+        })
+
     df_metadata = pd.DataFrame(metadata)
-    df_metadata.to_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'metadata.csv')
+    df_metadata.to_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'metadata.csv', index=False)
