@@ -45,6 +45,21 @@ def get_classification_transforms(**transform_parameters):
             hue=transform_parameters['hue'],
             p=transform_parameters['color_jitter_probability']
         ),
+        A.GaussianBlur(
+            blur_limit=transform_parameters['blur_limit'],
+            sigma_limit=transform_parameters['sigma_limit'],
+            p=transform_parameters['gaussian_blur_probability']
+        ),
+        A.CoarseDropout(
+            max_holes=transform_parameters['max_holes'],
+            max_height=transform_parameters['max_height'],
+            max_width=transform_parameters['max_width'],
+            min_holes=transform_parameters['min_holes'],
+            min_height=transform_parameters['min_height'],
+            min_width=transform_parameters['min_width'],
+            fill_value=0,
+            p=transform_parameters['coarse_dropout_probability']
+        ),
         A.Normalize(
             mean=transform_parameters['normalize_mean'],
             std=transform_parameters['normalize_std'],
