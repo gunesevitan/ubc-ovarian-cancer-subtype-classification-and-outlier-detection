@@ -2,17 +2,18 @@ import numpy as np
 import cv2
 import torch
 from torch.utils.data import Dataset
+import albumentations as A
 
 
 class ImageClassificationDataset(Dataset):
 
-    def __init__(self, image_paths, crop_size=None, n_crop=None, targets=None, transforms=None):
+    def __init__(self, image_paths, image_types, targets=None, transforms=None, zoom_normalization_probability=0):
 
         self.image_paths = image_paths
-        self.crop_size = crop_size
-        self.n_crop = n_crop
+        self.image_types = image_types
         self.targets = targets
         self.transforms = transforms
+        self.random_crop = A.RandomCrop(height=512, width=512, p=zoom_normalization_probability)
 
     def __len__(self):
 
@@ -39,69 +40,40 @@ class ImageClassificationDataset(Dataset):
 
         Returns
         -------
-        images: torch.FloatTensor of shape (n_crops, channel, height, width)
-            Images tensor
+        image: torch.FloatTensor of shape (channel, height, width)
+            Image tensor
 
-        targets: torch.Tensor of shape (n_crops, 1)
-            Targets tensor
+        target: torch.Tensor of shape (1)
+            Target tensor
         """
 
         image = cv2.imread(self.image_paths[idx])
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        images = []
 
-        if self.crop_size is not None:
-            image_height, image_width = image.shape[:2]
-            start_xs = np.random.randint(0, image_width - self.crop_size, self.n_crop)
-            start_ys = np.random.randint(0, image_height - self.crop_size, self.n_crop)
-        else:
-            start_xs = [0]
-            start_ys = [0]
+        image_type = self.image_types[idx]
+        if image_type == 'wsi':
+            image = self.random_crop(image=image)['image']
 
         if self.targets is not None:
 
             target = self.targets[idx]
             target = torch.as_tensor(target, dtype=torch.long)
-            targets = []
 
-            for (start_x, start_y) in zip(start_xs, start_ys):
+            if self.transforms is not None:
+                image = self.transforms(image=image)['image'].float()
+            else:
+                image = torch.as_tensor(image, dtype=torch.float)
 
-                if self.crop_size is not None:
-                    image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
-                else:
-                    image_crop = image[start_y:start_y + image.shape[0], start_x:start_x + image.shape[1]]
-
-                if self.transforms is not None:
-                    transformed = self.transforms(image=image_crop)
-                    images.append(transformed['image'])
-                else:
-                    images.append(torch.as_tensor(image_crop, dtype=torch.float))
-
-                targets.append(target)
-
-            images = torch.stack(images, dim=0)
-            targets = torch.stack(targets, dim=0)
-
-            return images, targets
+            return image, target
 
         else:
 
-            for (start_x, start_y) in zip(start_xs, start_ys):
+            if self.transforms is not None:
+                image = self.transforms(image=image)['image'].float()
+            else:
+                image = torch.as_tensor(image, dtype=torch.float)
 
-                if self.crop_size is not None:
-                    image_crop = image[start_y:start_y + self.crop_size, start_x:start_x + self.crop_size]
-                else:
-                    image_crop = image[start_y:start_y + image.shape[0], start_x:start_x + image.shape[1]]
-
-                if self.transforms is not None:
-                    transformed = self.transforms(image=image_crop)
-                    images.append(transformed['image'])
-                else:
-                    images = torch.as_tensor(images, dtype=torch.float)
-
-            images = torch.stack(images, dim=0)
-
-            return images
+            return image
 
 
 def prepare_classification_data(df, dataset_type):
@@ -122,6 +94,9 @@ def prepare_classification_data(df, dataset_type):
     image_paths: numpy.ndarray of shape (n_samples)
         Array of image paths
 
+    image_types: numpy.ndarray of shape (n_samples)
+        Array of image types
+
     targets: dict of numpy.ndarray of shape (n_samples)
         Array of targets
     """
@@ -134,6 +109,7 @@ def prepare_classification_data(df, dataset_type):
     else:
         raise ValueError(f'Invalid dataset type {dataset_type}')
 
+    image_types = df['image_type'].values
     df['target'] = df['label'].map({
         'HGSC': 0,
         'EC': 1,
@@ -144,7 +120,7 @@ def prepare_classification_data(df, dataset_type):
     }).astype(np.uint8)
     targets = df['target'].values
 
-    return image_paths, targets
+    return image_paths, image_types, targets
 
 
 def collate_fn(batch):
@@ -169,9 +145,5 @@ def collate_fn(batch):
     images, targets = zip(*batch)
     images = torch.cat(images, dim=0)
     targets = torch.cat(targets, dim=0)
-
-    idx = torch.randperm(images.shape[0])
-    images = images[idx]
-    targets = targets[idx]
 
     return images, targets
