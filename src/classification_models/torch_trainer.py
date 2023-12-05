@@ -177,8 +177,7 @@ if __name__ == '__main__':
     model_root_directory.mkdir(parents=True, exist_ok=True)
 
     dataset_type = config['dataset']['dataset_type']
-    crop_size = config['dataset']['crop_size']
-    n_crop = config['dataset']['n_crop']
+    top_n_crop = config['dataset']['top_n_crop']
     dataset_names = config['dataset']['dataset_names']
     df = []
     for dataset_name in dataset_names:
@@ -188,6 +187,8 @@ if __name__ == '__main__':
     df_folds = pd.read_csv(settings.DATA / 'folds.csv')
     df = df.merge(df_folds, on='image_id', how='left').fillna(0)
     del df_folds
+
+    df = df.groupby('image_id').head(top_n_crop).reset_index(drop=True)
 
     if args.mode == 'training':
 
@@ -202,8 +203,8 @@ if __name__ == '__main__':
                 validation_idx = training_idx
 
             # Create training and validation inputs and targets
-            training_image_paths, training_targets = torch_datasets.prepare_classification_data(df=df.loc[training_idx], dataset_type=dataset_type)
-            validation_image_paths, validation_targets = torch_datasets.prepare_classification_data(df=df.loc[validation_idx], dataset_type=dataset_type)
+            training_image_paths, training_image_types, training_targets = torch_datasets.prepare_classification_data(df=df.loc[training_idx], dataset_type=dataset_type)
+            validation_image_paths, validation_image_types, validation_targets = torch_datasets.prepare_classification_data(df=df.loc[validation_idx], dataset_type=dataset_type)
 
             settings.logger.info(
                 f'''
@@ -216,10 +217,10 @@ if __name__ == '__main__':
             # Create training and validation datasets and dataloaders
             training_dataset = torch_datasets.ImageClassificationDataset(
                 image_paths=training_image_paths,
-                crop_size=crop_size,
-                n_crop=n_crop,
+                image_types=training_image_types,
                 targets=training_targets,
-                transforms=dataset_transforms['training']
+                transforms=dataset_transforms['training'],
+                zoom_normalization_probability=config['transforms']['zoom_normalization_probability']
             )
             training_loader = DataLoader(
                 training_dataset,
@@ -227,15 +228,14 @@ if __name__ == '__main__':
                 sampler=RandomSampler(training_dataset, replacement=False),
                 pin_memory=False,
                 drop_last=False,
-                num_workers=config['training']['num_workers'],
-                collate_fn=torch_datasets.collate_fn
+                num_workers=config['training']['num_workers']
             )
             validation_dataset = torch_datasets.ImageClassificationDataset(
                 image_paths=validation_image_paths,
-                crop_size=crop_size,
-                n_crop=n_crop,
+                image_types=validation_image_types,
                 targets=validation_targets,
-                transforms=dataset_transforms['inference']
+                transforms=dataset_transforms['inference'],
+                zoom_normalization_probability=0
             )
             validation_loader = DataLoader(
                 validation_dataset,
@@ -243,8 +243,7 @@ if __name__ == '__main__':
                 sampler=SequentialSampler(validation_dataset),
                 pin_memory=False,
                 drop_last=False,
-                num_workers=config['training']['num_workers'],
-                collate_fn=torch_datasets.collate_fn
+                num_workers=config['training']['num_workers']
             )
 
             # Set model, device and seed for reproducible results
@@ -358,7 +357,7 @@ if __name__ == '__main__':
 
             # Create validation inputs and targets
             validation_idx = df.loc[df[fold] == 1].index
-            validation_image_paths, validation_targets = torch_datasets.prepare_classification_data(df=df.loc[validation_idx], dataset_type=dataset_type)
+            validation_image_paths, validation_image_types, validation_targets = torch_datasets.prepare_classification_data(df=df.loc[validation_idx], dataset_type=dataset_type)
 
             settings.logger.info(
                 f'''
@@ -370,10 +369,10 @@ if __name__ == '__main__':
             # Create validation datasets and dataloaders
             validation_dataset = torch_datasets.ImageClassificationDataset(
                 image_paths=validation_image_paths,
-                crop_size=crop_size,
-                n_crop=n_crop,
+                image_types=validation_image_types,
                 targets=validation_targets,
-                transforms=dataset_transforms['inference']
+                transforms=dataset_transforms['inference'],
+                zoom_normalization_probability=0
             )
             validation_loader = DataLoader(
                 validation_dataset,
@@ -381,8 +380,7 @@ if __name__ == '__main__':
                 sampler=SequentialSampler(validation_dataset),
                 pin_memory=False,
                 drop_last=False,
-                num_workers=config['training']['num_workers'],
-                collate_fn=torch_datasets.collate_fn
+                num_workers=config['training']['num_workers']
             )
 
             # Set model, device and seed for reproducible results
@@ -427,18 +425,37 @@ if __name__ == '__main__':
 
                 validation_predictions += [outputs]
 
-            validation_predictions = torch.cat(validation_predictions, dim=0)
-            validation_predictions = validation_predictions.view(validation_predictions.shape[0] // n_crop, n_crop, -1).mean(dim=1)
-            validation_predictions = np.argmax(torch.softmax(validation_predictions, dim=-1).numpy(), axis=1)
-
-            df.loc[validation_idx, 'prediction'] = validation_predictions
+            prediction_columns = [f'prediction_{i}' for i in range(1, 6)]
+            validation_predictions = torch.softmax(torch.cat(validation_predictions, dim=0), dim=-1).numpy()
+            df.loc[validation_idx, prediction_columns] = validation_predictions
             df.loc[validation_idx, 'target'] = validation_targets
-            validation_scores = metrics.multiclass_classification_scores(y_true=df.loc[validation_idx, 'target'], y_pred=df.loc[validation_idx, 'prediction'])
+            prediction_aggregation = 'mean'
+            df_image_level_predictions = df.loc[validation_idx].groupby('image_id').agg({
+                'prediction_1': prediction_aggregation,
+                'prediction_2': prediction_aggregation,
+                'prediction_3': prediction_aggregation,
+                'prediction_4': prediction_aggregation,
+                'prediction_5': prediction_aggregation,
+                'target': 'first',
+            })
+            df_image_level_predictions['prediction'] = np.argmax(df_image_level_predictions[prediction_columns], axis=1)
+
+            validation_scores = metrics.multiclass_classification_scores(y_true=df_image_level_predictions['target'], y_pred=df_image_level_predictions['prediction'])
             df_scores.append(validation_scores)
             settings.logger.info(f'{fold} Validation Scores: {json.dumps(validation_scores, indent=2)}')
 
-        df['prediction'] = df['prediction'].astype(int)
-        df['target'] = df['target'].astype(int)
+        prediction_aggregation = 'mean'
+        prediction_columns = [f'prediction_{i}' for i in range(1, 6)]
+        df_image_level_predictions = df.groupby('image_id').agg({
+            'prediction_1': prediction_aggregation,
+            'prediction_2': prediction_aggregation,
+            'prediction_3': prediction_aggregation,
+            'prediction_4': prediction_aggregation,
+            'prediction_5': prediction_aggregation,
+            'target': 'first',
+            'image_type': 'first',
+        }).reset_index()
+        df_image_level_predictions['prediction'] = np.argmax(df_image_level_predictions[prediction_columns], axis=1)
 
         df_scores = pd.DataFrame(df_scores)
         settings.logger.info(
@@ -450,21 +467,21 @@ if __name__ == '__main__':
             '''
         )
 
-        tma_mask = df['image_type'] == 'tma'
-        tma_oof_scores = metrics.multiclass_classification_scores(y_true=df.loc[tma_mask, 'target'], y_pred=df.loc[tma_mask, 'prediction'])
+        tma_mask = df_image_level_predictions['image_type'] == 'tma'
+        tma_oof_scores = metrics.multiclass_classification_scores(y_true=df_image_level_predictions.loc[tma_mask, 'target'], y_pred=df_image_level_predictions.loc[tma_mask, 'prediction'])
         settings.logger.info(f'TMA OOF Scores: {json.dumps(tma_oof_scores, indent=2)}')
 
         with open(model_root_directory / 'tma_oof_scores.json', mode='w') as f:
             json.dump(tma_oof_scores, f, indent=2, ensure_ascii=False)
 
-        wsi_mask = df['image_type'] == 'wsi'
-        wsi_oof_scores = metrics.multiclass_classification_scores(y_true=df.loc[wsi_mask, 'target'], y_pred=df.loc[wsi_mask, 'prediction'])
+        wsi_mask = df_image_level_predictions['image_type'] == 'wsi'
+        wsi_oof_scores = metrics.multiclass_classification_scores(y_true=df_image_level_predictions.loc[wsi_mask, 'target'], y_pred=df_image_level_predictions.loc[wsi_mask, 'prediction'])
         settings.logger.info(f'WSI OOF Scores: {json.dumps(wsi_oof_scores, indent=2)}')
 
         with open(model_root_directory / 'wsi_oof_scores.json', mode='w') as f:
             json.dump(wsi_oof_scores, f, indent=2, ensure_ascii=False)
 
-        oof_scores = metrics.multiclass_classification_scores(y_true=df.loc[:, 'target'], y_pred=df.loc[:, 'prediction'])
+        oof_scores = metrics.multiclass_classification_scores(y_true=df_image_level_predictions.loc[:, 'target'], y_pred=df_image_level_predictions.loc[:, 'prediction'])
         settings.logger.info(f'OOF Scores: {json.dumps(oof_scores, indent=2)}')
 
         with open(model_root_directory / 'oof_scores.json', mode='w') as f:
@@ -477,11 +494,11 @@ if __name__ == '__main__':
         )
 
         visualization.visualize_predictions(
-            y_true=df['target'],
-            y_pred=df['prediction'],
+            y_true=df_image_level_predictions['target'],
+            y_pred=df_image_level_predictions['prediction'],
             title=f'Predictions of {len(folds)} Model(s)',
             plot_type='histogram',
             path=model_root_directory / f'oof_predictions_histogram.png'
         )
 
-        df[['image_id', 'prediction']].to_csv(model_root_directory / 'oof_predictions.csv', index=False)
+        df_image_level_predictions[['image_id', 'prediction']].to_csv(model_root_directory / 'oof_predictions.csv', index=False)
