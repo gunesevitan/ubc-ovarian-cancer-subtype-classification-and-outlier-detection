@@ -6,11 +6,11 @@ import timm
 from heads import ClassificationHead
 
 
-class TimmImageClassificationModel(nn.Module):
+class TimmConvImageClassificationModel(nn.Module):
 
     def __init__(self, model_name, pretrained, backbone_args, pooling_type, dropout_rate, freeze_parameters, head_args):
 
-        super(TimmImageClassificationModel, self).__init__()
+        super(TimmConvImageClassificationModel, self).__init__()
 
         self.backbone = timm.create_model(
             model_name=model_name,
@@ -47,3 +47,34 @@ class TimmImageClassificationModel(nn.Module):
         cancer_output = self.head(x)
 
         return cancer_output
+
+
+class TimmTransformerImageClassificationModel(nn.Module):
+
+    def __init__(self, model_name, pretrained, backbone_args, dropout_rate, freeze_parameters, head_args):
+
+        super(TimmTransformerImageClassificationModel, self).__init__()
+
+        self.backbone = timm.create_model(
+            model_name=model_name,
+            pretrained=pretrained,
+            **backbone_args
+        )
+
+        if freeze_parameters:
+            for parameter in self.backbone.parameters():
+                parameter.requires_grad = False
+
+        input_features = self.backbone.get_classifier().in_features
+        self.backbone.head.drop = nn.Identity()
+        self.backbone.head.fc = nn.Identity()
+        self.dropout = nn.Dropout(dropout_rate) if dropout_rate > 0 else nn.Identity()
+        self.head = ClassificationHead(input_dimensions=input_features, **head_args)
+
+    def forward(self, x):
+
+        x = self.backbone(x)
+        x = self.dropout(x)
+        output = self.head(x)
+
+        return output
