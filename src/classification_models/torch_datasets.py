@@ -7,8 +7,9 @@ import albumentations as A
 
 class ImageClassificationDataset(Dataset):
 
-    def __init__(self, image_paths, image_types, targets=None, transforms=None, zoom_normalization_probability=0):
+    def __init__(self, image_ids, image_paths, image_types, targets=None, transforms=None, zoom_normalization_probability=0):
 
+        self.image_ids = image_ids
         self.image_paths = image_paths
         self.image_types = image_types
         self.targets = targets
@@ -18,7 +19,7 @@ class ImageClassificationDataset(Dataset):
     def __len__(self):
 
         """
-        Get the length the dataset
+        Get the length of the dataset
 
         Returns
         -------
@@ -40,6 +41,12 @@ class ImageClassificationDataset(Dataset):
 
         Returns
         -------
+        image_id: int
+            Image identifier
+
+        image_type: str
+            Image type
+
         image: torch.FloatTensor of shape (channel, height, width)
             Image tensor
 
@@ -47,10 +54,11 @@ class ImageClassificationDataset(Dataset):
             Target tensor
         """
 
+        image_id = self.image_ids[idx]
         image = cv2.imread(self.image_paths[idx])
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
         image_type = self.image_types[idx]
+
         if image_type == 'wsi':
             image = self.random_crop(image=image)['image']
 
@@ -64,7 +72,7 @@ class ImageClassificationDataset(Dataset):
             else:
                 image = torch.as_tensor(image, dtype=torch.float)
 
-            return image, target
+            return image_id, image_type, image, target
 
         else:
 
@@ -73,10 +81,10 @@ class ImageClassificationDataset(Dataset):
             else:
                 image = torch.as_tensor(image, dtype=torch.float)
 
-            return image
+            return image_id, image_type, image
 
 
-def prepare_classification_data(df, dataset_type):
+def prepare_classification_data(df):
 
     """
     Prepare data for classification dataset
@@ -84,31 +92,25 @@ def prepare_classification_data(df, dataset_type):
     Parameters
     ----------
     df: pandas.DataFrame
-        Dataframe with image_path and target columns
-
-    dataset_type: str
-        Type of the dataset
+        Dataframe with image_id, image_type, image_path and target columns
 
     Returns
     -------
-    image_paths: numpy.ndarray of shape (n_samples)
-        Array of image paths
+    image_ids: numpy.ndarray of shape (n_samples)
+        Array of image identifiers
 
     image_types: numpy.ndarray of shape (n_samples)
         Array of image types
+
+    image_paths: numpy.ndarray of shape (n_samples)
+        Array of image paths
 
     targets: dict of numpy.ndarray of shape (n_samples)
         Array of targets
     """
 
-    if dataset_type == 'image_dataset':
-        image_paths = df['image_path'].values
-    elif dataset_type == 'instance_dataset':
-        image_paths = df['image_path'].apply(lambda image_path: '/'.join(str(image_path).split('/')[:-2]) + f'/instances/{str(image_path).split("/")[-1]}')
-        image_paths = image_paths.apply(lambda x: [f'{"/".join(x.split("/")[:-1])}/{str(x).split("/")[-1].split(".")[0]}_{q}.png' for q in range(1, 17)]).values
-    else:
-        raise ValueError(f'Invalid dataset type {dataset_type}')
-
+    image_ids = df['image_id'].values
+    image_paths = df['image_path'].values
     image_types = df['image_type'].values
     df['target'] = df['label'].map({
         'HGSC': 0,
@@ -120,7 +122,7 @@ def prepare_classification_data(df, dataset_type):
     }).astype(np.uint8)
     targets = df['target'].values
 
-    return image_paths, image_types, targets
+    return image_ids, image_types, image_paths, targets
 
 
 def collate_fn(batch):
@@ -142,7 +144,7 @@ def collate_fn(batch):
         Targets tensor
     """
 
-    images, targets = zip(*batch)
+    _, _, images, targets = zip(*batch)
     images = torch.cat(images, dim=0)
     targets = torch.cat(targets, dim=0)
 
