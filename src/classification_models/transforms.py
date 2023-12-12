@@ -1,6 +1,37 @@
+import random
 import cv2
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
+from albumentations.augmentations.crops.functional import random_crop
+
+
+class RandomRandomCrop(A.RandomCrop):
+
+    """
+    Crop a random part of the input of a random size
+
+    Parameters
+    ----------
+    min_size: int
+        Minimum size of the crop
+
+    max_size: int
+        Max size of the crop
+
+    p: float
+        Probability of applying the transform
+    """
+
+    def __init__(self, min_size, max_size, always_apply=False, p=1.0):
+
+        super(RandomRandomCrop, self).__init__(512, 512, always_apply, p)
+        self.min_size = min_size
+        self.max_size = max_size
+
+    def apply(self, img, h_start=0, w_start=0, **params):
+
+        crop_size = random.randint(self.min_size, self.max_size)
+        return random_crop(img, crop_size, crop_size, h_start, w_start)
 
 
 def get_classification_transforms(**transform_parameters):
