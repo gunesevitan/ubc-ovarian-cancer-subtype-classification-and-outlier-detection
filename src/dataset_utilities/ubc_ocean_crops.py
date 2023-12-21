@@ -37,18 +37,18 @@ def read_image(image_path):
 
 if __name__ == '__main__':
 
-    raw_image_directory = settings.HDD / 'ubc_ocean' / 'train_images'
+    raw_train_image_directory = settings.HDD / 'ubc_ocean' / 'train_images'
     df_train = pd.read_csv(settings.HDD / 'ubc_ocean' / 'train.csv')
-    df_wsi_crops = pd.read_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'train_crops_info.csv')
+    df_train_wsi_crops = pd.read_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'train_crops_info.csv')
 
     output_image_directory = settings.DATA / 'model_datasets' / 'ubc_ocean' / 'images'
     output_image_directory.mkdir(parents=True, exist_ok=True)
 
     metadata = []
 
-    for image_id, df_image in tqdm(df_wsi_crops.groupby('image_id'), total=df_wsi_crops['image_id'].nunique()):
+    for image_id, df_image in tqdm(df_train_wsi_crops.groupby('image_id'), total=df_train_wsi_crops['image_id'].nunique()):
 
-        image = read_image(str(raw_image_directory / f'{image_id}.png'))
+        image = read_image(str(raw_train_image_directory / f'{image_id}.png'))
 
         for crop_idx, row in tqdm(df_image.iterrows(), total=df_image.shape[0]):
 
@@ -77,7 +77,7 @@ if __name__ == '__main__':
         image_id = row['image_id']
         image_path = str(output_image_directory / f'{image_id}_0.png')
 
-        image = cv2.imread(str(raw_image_directory / f'{image_id}.png'))
+        image = cv2.imread(str(raw_train_image_directory / f'{image_id}.png'))
         # Drop low standard deviation rows and columns (white areas with less tissue)
         image = image_utilities.drop_low_std(image=image, threshold=10)
 
@@ -91,5 +91,31 @@ if __name__ == '__main__':
             'image_path': image_path
         })
 
+    raw_test_image_directory = settings.HDD / 'ubc_ocean' / 'test_images'
+    df_test_wsi_crops = pd.read_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'test_crops_info.csv')
+    image = read_image(str(raw_test_image_directory / '41.png'))
+    for crop_idx, row in tqdm(df_test_wsi_crops.iterrows(), total=df_test_wsi_crops.shape[0]):
+
+        crop_id = row['crop_id']
+        label = row['label']
+        image_path = str(output_image_directory / f'41_{crop_id}.png')
+
+        image_crop = image[
+            row['h1']:row['h2'],
+            row['w1']:row['w2'],
+            :
+        ].copy()
+
+        cv2.imwrite(image_path, image_crop)
+
+        metadata.append({
+            'image_id': 41,
+            'crop_id': crop_id,
+            'label': row['label'],
+            'image_type': 'wsi',
+            'image_path': image_path
+        })
+
     df_metadata = pd.DataFrame(metadata)
+    df_metadata = df_metadata.sort_values(by=['image_id', 'crop_id'], ascending=True).reset_index(drop=True)
     df_metadata.to_csv(settings.DATA / 'model_datasets' / 'ubc_ocean' / 'metadata.csv', index=False)
