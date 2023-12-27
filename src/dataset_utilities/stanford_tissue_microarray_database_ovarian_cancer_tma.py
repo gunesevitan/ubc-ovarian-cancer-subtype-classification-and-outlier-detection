@@ -33,13 +33,12 @@ if __name__ == '__main__':
 
     metadata = []
 
-    for image_path in tqdm(raw_image_paths):
+    for image_id, image_path in enumerate(tqdm(raw_image_paths)):
 
         image = cv2.imread(image_path)
 
         image_file_name = image_path.split('/')[-1]
         image_metadata = image_file_name.split('_')
-        image_id = f'{dataset_name}_{image_metadata[0]}_{image_metadata[1]}'
         organ = image_metadata[2]
         cancer_subtype = image_metadata[-1].split('.')[0]
         output_image_path = str(output_image_directory / f'{image_id}.jpg')
