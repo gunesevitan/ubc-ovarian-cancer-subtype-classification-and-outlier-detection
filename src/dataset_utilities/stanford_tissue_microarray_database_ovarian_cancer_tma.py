@@ -46,7 +46,7 @@ if __name__ == '__main__':
         image_height = image.shape[0]
 
         metadata.append({
-            'image_id': image_id,
+            'image_id': f'{dataset_name}_{image_id}',
             'label': CLASS_MAPPING[cancer_subtype],
             'image_width': image_width,
             'image_height': image_height,
