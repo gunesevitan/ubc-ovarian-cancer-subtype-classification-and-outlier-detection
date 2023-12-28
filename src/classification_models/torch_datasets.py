@@ -137,6 +137,12 @@ def collate_fn(batch):
 
     Returns
     -------
+    image_ids: numpy.ndarray of shape (batch_size, 1)
+        Image IDs array
+
+    image_types: numpy.ndarray of shape (batch_size, 1)
+        Image types array
+
     images: torch.FloatTensor of shape (batch_size, channel, height, width)
         Images tensor
 
@@ -144,8 +150,10 @@ def collate_fn(batch):
         Targets tensor
     """
 
-    _, _, images, targets = zip(*batch)
-    images = torch.cat(images, dim=0)
-    targets = torch.cat(targets, dim=0)
+    image_ids, image_types, images, targets = zip(*batch)
+    image_ids = np.array(image_ids)
+    image_types = np.array(image_types)
+    images = torch.stack(images, dim=0)
+    targets = torch.stack(targets, dim=0)
 
-    return images, targets
+    return image_ids, image_types, images, targets
