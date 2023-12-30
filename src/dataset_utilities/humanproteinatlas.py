@@ -7,11 +7,12 @@ import cv2
 
 sys.path.append('..')
 import settings
+import image_utilities
 
 
 if __name__ == '__main__':
 
-    dataset_name = 'usbiolabcom'
+    dataset_name = 'human_protein_atlas'
     raw_image_directory = settings.DATA / 'raw_datasets' / dataset_name / 'images'
     raw_image_paths = glob(str(raw_image_directory / '*'))
 
@@ -30,6 +31,12 @@ if __name__ == '__main__':
             continue
 
         image = cv2.imread(image_path)
+        largest_contour = image_utilities.get_largest_contour(image=255 - cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), threshold=20)
+        image = image[
+            largest_contour[1]:largest_contour[3] + 1,
+            largest_contour[0]:largest_contour[2] + 1,
+            :
+        ]
 
         output_image_path = str(output_image_directory / f'{image_id}.png')
         image_width = image.shape[1]
