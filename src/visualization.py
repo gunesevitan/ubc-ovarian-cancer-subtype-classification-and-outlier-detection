@@ -1,5 +1,7 @@
 import numpy as np
+from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def visualize_categorical_column_distribution(df, column, title, path=None):
@@ -93,7 +95,7 @@ def visualize_continuous_column_distribution(df, column, title, path=None):
         plt.close(fig)
 
 
-def visualize_image(image, title, path=None):
+def visualize_image(image, title, mask=None, path=None):
 
     """
     Visualize the given image
@@ -106,12 +108,19 @@ def visualize_image(image, title, path=None):
     title: str
         Title of the plot
 
+    mask: numpy.ndarray of shape (height, width)
+        Mask array
+
+
+
     path: str or None
         Path of the output file or None (if path is None, plot is displayed with selected backend)
     """
 
     fig, ax = plt.subplots(figsize=(8, 8))
     ax.imshow(image)
+    if mask is not None:
+        ax.imshow(mask, alpha=0.5)
     ax.set_xlabel('')
     ax.set_ylabel('')
     ax.tick_params(axis='x', labelsize=15, pad=10)
@@ -284,6 +293,59 @@ def visualize_predictions(y_true, y_pred, title, plot_type, path=None):
 
     ax.tick_params(axis='x', labelsize=15)
     ax.tick_params(axis='y', labelsize=15)
+    ax.set_title(title, size=20, pad=15)
+
+    if path is None:
+        plt.show()
+    else:
+        plt.savefig(path)
+        plt.close(fig)
+
+
+def visualize_confusion_matrix(y_true, y_pred, title, path=None):
+
+    """
+    Visualize confusion matrix of predictions
+
+    Parameters
+    ----------
+    y_true: array-like of shape (n_samples)
+        Array of ground-truth values
+
+    y_pred: array-like of shape (n_samples)
+        Array of prediction values
+
+    title: str
+        Title of the plot
+
+    path: path-like str or None
+        Path of the output file or None (if path is None, plot is displayed with selected backend)
+    """
+
+    cf = confusion_matrix(y_true=y_true, y_pred=y_pred, normalize='true')
+    label_mapping = {
+        'HGSC': 0,
+        'EC': 1,
+        'CC': 2,
+        'LGSC': 3,
+        'MC': 4,
+    }
+
+    fig, ax = plt.subplots(figsize=(20, 20), dpi=100)
+    ax = sns.heatmap(
+        cf,
+        annot=True,
+        square=True,
+        cmap='coolwarm',
+        annot_kws={'size': 12},
+        fmt='.2f'
+    )
+    cbar = ax.collections[0].colorbar
+    cbar.ax.tick_params(labelsize=15)
+    ax.set_xticks(np.arange(len(label_mapping)) + 0.5, list(label_mapping.keys()))
+    ax.set_yticks(np.arange(len(label_mapping)) + 0.5, list(label_mapping.keys()))
+    ax.tick_params(axis='x', labelsize=10)
+    ax.tick_params(axis='y', labelsize=10)
     ax.set_title(title, size=20, pad=15)
 
     if path is None:
