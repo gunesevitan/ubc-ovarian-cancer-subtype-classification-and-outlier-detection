@@ -25,10 +25,6 @@ if __name__ == '__main__':
 
         image_file_name = image_path.split('/')[-1]
         image_metadata = image_file_name.split('_')
-
-        if image_metadata[1].split('.')[0] in ['HGSC', 'LGSC']:
-            continue
-
         image = cv2.imread(image_path)
 
         output_image_path = str(output_image_directory / f'{image_id}.png')
