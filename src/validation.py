@@ -59,7 +59,7 @@ def create_folds(df, stratify_columns, n_splits, shuffle=True, random_state=42, 
 
 if __name__ == '__main__':
 
-    df_train = pd.read_csv(settings.DATA / 'ubc_ocean' / 'train.csv')
+    df_train = pd.read_csv(settings.DATA / 'raw_datasets' / 'ubc_ocean' / 'train.csv')
     settings.logger.info(f'Train Dataset Shape: {df_train.shape} - Memory Usage: {df_train.memory_usage().sum() / 1024 ** 2:.2f} MB')
 
     n_splits = 5
@@ -74,3 +74,29 @@ if __name__ == '__main__':
 
     df_train[['image_id'] + [f'fold{fold}' for fold in range(1, n_splits + 1)]].to_csv(settings.DATA / 'folds.csv', index=False)
     settings.logger.info(f'folds.csv is saved to {settings.DATA}')
+
+    # Read and concatenate metadata from dataset directories
+    dataset_names = [
+        'ubc_ocean',
+        'stanford_tissue_microarray_database_ovarian_cancer_tma',
+        'tissuearraycom',
+        'kztymsrjx9',
+        'usbiolabcom',
+        'human_protein_atlas'
+    ]
+    df = []
+    for dataset_name in dataset_names:
+        df.append(pd.read_csv(settings.DATA / 'model_datasets' / dataset_name / 'metadata.csv'))
+
+    df = pd.concat(df, axis=0).reset_index(drop=True)
+    df = df.groupby('image_id').first().reset_index()
+    df['dataset'] = df['dataset'].fillna('ubc_ocean')
+    df = create_folds(
+        df=df,
+        stratify_columns=['label', 'image_type', 'dataset'],
+        n_splits=n_splits,
+        shuffle=True,
+        random_state=42,
+        verbose=True
+    )
+    df[['image_id', 'dataset'] + [f'fold{fold}' for fold in range(1, n_splits + 1)]].to_csv(settings.DATA / 'folds_2.csv', index=False)
