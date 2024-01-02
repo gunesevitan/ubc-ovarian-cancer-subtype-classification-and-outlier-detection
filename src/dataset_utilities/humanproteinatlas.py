@@ -27,9 +27,6 @@ if __name__ == '__main__':
         image_file_name = image_path.split('/')[-1]
         image_metadata = image_file_name.split('_')
 
-        if image_metadata[1].split('.')[0] in ['HGSC', 'LGSC']:
-            continue
-
         image = cv2.imread(image_path)
         largest_contour = image_utilities.get_largest_contour(image=255 - cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), threshold=20)
         image = image[
