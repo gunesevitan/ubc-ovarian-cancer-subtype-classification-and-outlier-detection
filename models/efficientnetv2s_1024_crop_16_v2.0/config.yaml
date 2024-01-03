@@ -1,0 +1,93 @@
+dataset:
+  dataset_type: 'single_image_dataset'
+  dataset_names: [
+    'ubc_ocean',
+    'stanford_tissue_microarray_database_ovarian_cancer_tma',
+    'tissuearraycom',
+    'kztymsrjx9',
+    'usbiolabcom',
+    'human_protein_atlas'
+  ]
+  top_n_crop: 16
+
+model:
+  model_class: 'TimmConvImageClassificationModel'
+  model_args:
+    model_name: 'efficientnetv2_rw_s'
+    pretrained: True
+    backbone_args:
+      in_chans: 3
+      drop_rate: 0.1
+      drop_path_rate: 0.1
+    pooling_type: 'avg'
+    dropout_rate: 0.1
+    freeze_parameters: False
+    head_args:
+      cancer_output_dimensions: 6
+  model_checkpoint_path: null
+
+training:
+  folds: ['fold1', 'fold2', 'fold3', 'fold4', 'fold5']
+  loss_function: 'CrossEntropyLoss'
+  loss_function_args: {}
+  training_batch_size: 4
+  test_batch_size: 8
+  num_workers: 16
+  random_state: 42
+  deterministic_cudnn: False
+  device: 'cuda'
+  optimizer: 'AdamW'
+  optimizer_args:
+    lr: 0.0001
+    betas: [0.9, 0.999]
+    weight_decay: 0.00001
+  lr_scheduler: 'CosineAnnealingLR'
+  lr_scheduler_args:
+    T_max: 2500
+    eta_min: 0.00001
+    last_epoch: -1
+    verbose: False
+  amp: True
+  epochs: 15
+  early_stopping_patience: 999
+
+test:
+  folds: ['fold1', 'fold2', 'fold3', 'fold4', 'fold5']
+  model_file_names: ['model_fold1_epoch_7.pt', 'model_fold2_epoch_5.pt', 'model_fold3_epoch_2.pt', 'model_fold4_epoch_10.pt', 'model_fold5_epoch_10.pt']
+  tta: True
+  tta_flip_dimensions: [[2], [3], [2, 3]]
+
+transforms:
+    zoom_normalization_probability: 0.025
+    resize_height: 1024
+    resize_width: 1024
+    horizontal_flip_probability: 0.5
+    vertical_flip_probability: 0.5
+    random_rotate_90_probability: 0.5
+    shift_limit: 0.0250
+    scale_limit: 0.1
+    rotate_limit: 45
+    shift_scale_rotate_probability: 0.2
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.5
+    hue: 0.5
+    color_jitter_probability: 0.5
+    channel_shuffle_probability: 0.025
+    blur_limit: [1, 7]
+    sigma_limit: 0
+    gaussian_blur_probability: 0.1
+    max_holes: 8
+    max_height: 16
+    max_width: 16
+    min_holes: 4
+    min_height: 8
+    min_width: 8
+    coarse_dropout_probability: 0.1
+    normalize_mean: [0.485, 0.456, 0.406]
+    normalize_std: [0.229, 0.224, 0.225]
+    normalize_max_pixel_value: 255
+
+persistence:
+  model_directory: 'efficientnetv2s_1024_crop_16_v2.0'
+  save_epoch_model: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
