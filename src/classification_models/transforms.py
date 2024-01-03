@@ -4,7 +4,6 @@ import albumentations as A
 from albumentations import ImageOnlyTransform
 from albumentations.pytorch.transforms import ToTensorV2
 from albumentations.augmentations.crops.functional import random_crop
-import staintools
 
 
 class RandomRandomCrop(A.RandomCrop):
@@ -35,28 +34,6 @@ class RandomRandomCrop(A.RandomCrop):
         crop_size = random.randint(self.min_size, self.max_size)
         return random_crop(img, crop_size, crop_size, h_start, w_start)
 
-
-class StandardizeLuminosity(ImageOnlyTransform):
-
-    def apply(self, image, **kwargs):
-
-        """
-        Normalize luminosity (white areas) in whole-slide images
-
-        Parameters
-        ----------
-        image (numpy.ndarray of shape (height, width, channel)): Image array
-
-        Returns
-        -------
-        image (numpy.ndarray of shape (height, width, channel)): Image array with standardized luminosity
-        """
-
-        image = staintools.LuminosityStandardizer.standardize(image)
-
-        return image
-
-
 def get_classification_transforms(**transform_parameters):
 
     """
@@ -83,7 +60,6 @@ def get_classification_transforms(**transform_parameters):
         A.HorizontalFlip(p=transform_parameters['horizontal_flip_probability']),
         A.VerticalFlip(p=transform_parameters['vertical_flip_probability']),
         A.RandomRotate90(p=transform_parameters['random_rotate_90_probability']),
-        StandardizeLuminosity(p=transform_parameters['standardize_luminosity_probability']),
         A.ShiftScaleRotate(
             shift_limit=transform_parameters['shift_limit'],
             scale_limit=transform_parameters['scale_limit'],
