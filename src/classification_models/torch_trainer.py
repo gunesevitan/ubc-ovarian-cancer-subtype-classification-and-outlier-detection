@@ -250,6 +250,7 @@ if __name__ == '__main__':
     df = []
     for dataset_name in dataset_names:
         df.append(pd.read_csv(settings.DATA / 'model_datasets' / dataset_name / 'metadata.csv'))
+
     df = pd.concat(df, axis=0).reset_index(drop=True)
 
     if dataset_type == 'multi_image_dataset':
@@ -265,9 +266,14 @@ if __name__ == '__main__':
     else:
         raise ValueError(f'Invalid dataset type {dataset_type}')
 
+    df['dataset'] = df['dataset'].fillna('ubc_ocean')
+    df['image_id'] = df['image_id'].astype(str)
+
     # Read and merge precomputed folds
     df_folds = pd.read_csv(settings.DATA / 'folds.csv')
-    df = df.merge(df_folds, on='image_id', how='left').fillna(0)
+    df_folds['image_id'] = df_folds['image_id'].astype(str)
+    df = df.merge(df_folds, on=['image_id'], how='left')
+    df[[f'fold{fold}' for fold in range(1, 6)]] = df[[f'fold{fold}' for fold in range(1, 6)]].fillna(0)
     del df_folds
 
     torch.multiprocessing.set_sharing_strategy('file_system')
@@ -337,7 +343,7 @@ if __name__ == '__main__':
             device = torch.device(config['training']['device'])
 
             criterion = getattr(torch_modules, config['training']['loss_function'])(weight=torch.tensor([
-                2.41808686, 4.3592666, 5.45043371, 11.4843342, 12.93676471, 108.60493827
+                2.621275, 4.803730, 6.493397, 11.164087, 10.148218, 14.658537
             ]).half().cuda(), **config['training']['loss_function_args'])
             model = getattr(torch_modules, config['model']['model_class'])(**config['model']['model_args'])
             if config['model']['model_checkpoint_path'] is not None:
@@ -485,7 +491,8 @@ if __name__ == '__main__':
                 sampler=SequentialSampler(validation_dataset),
                 pin_memory=False,
                 drop_last=False,
-                num_workers=config['training']['num_workers']
+                num_workers=config['training']['num_workers'],
+                collate_fn=torch_datasets.collate_fn
             )
 
             # Set model, device and seed for reproducible results
