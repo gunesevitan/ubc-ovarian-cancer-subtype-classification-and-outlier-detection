@@ -71,7 +71,7 @@ def drop_low_std(image, threshold):
 
 Multi-label stratified kfold is used as the cross-validation scheme.
 Dataset is split into 5 folds.
-label and is_tma columns are used for stratification.
+`label` and `is_tma` columns are used for stratification.
 
 ## 3. Models
 
@@ -87,7 +87,7 @@ Cosine annealing scheduler is used with 0.00001 minimum learning rate.
 
 AMP is also used for faster training and regularization.
 
-Each fold is trained for 15 epochs and epochs with highest balanced accuracy are selected.
+Each fold is trained for 15 epochs and epochs with the highest balanced accuracy are selected.
 
 Training transforms are:
 
@@ -96,7 +96,7 @@ Training transforms are:
 * Horizontal flip
 * Vertical flip
 * Random 90-degree rotation
-* Shift scale rotate with 45-degree rotations and mild shift and scale augmentation
+* Shift scale rotate with 45-degree rotations and mild shift/scale augmentation
 * Color jitter with strong hue and saturation
 * Channel shuffle
 * Gaussian blur
@@ -108,7 +108,7 @@ Training transforms are:
 5 folds of EfficientNetV2 small model are used in the inference pipeline.
 Average of 5 folds are taken after predicting with each model.
 
-3x TTA (horizontal, vertical and diagonal) are applied and average of predictions are taken.
+3x TTA (horizontal, vertical and diagonal flip) are applied and average of predictions are taken.
 
 16 crops are extracted for each WSI and average of their predictions are taken.
 
@@ -181,7 +181,7 @@ Images are downloaded from [here](https://www.proteinatlas.org/search/prognostic
 
 ### Summary
 
-Those were the sources where I found external data.
+Those were the sources where I found the external data.
 
 |                                     | Images | Type | HGSC | EC  | CC  | LGSC | MC  | Other |
 |-------------------------------------|--------|------|------|-----|-----|------|-----|-------|
@@ -194,7 +194,7 @@ Those were the sources where I found external data.
 
 ## 8. Final Iteration
 
-Final dataset label distribution was like this
+Final dataset (including 16 crops per WSI) label distribution was like this
 
 * HGSC: 4127
 * EC: 2252
@@ -203,4 +203,17 @@ Final dataset label distribution was like this
 * LGSC: 969
 * Other: 738
 
-and the model was predicting Other class.
+and image type distribution was like this
+
+* WSI (16x 1024 crops): 8224
+* TMA: 2594
+
+All the external data are concatenated to each fold's training sets.
+Validation sets are not changed in order to get comparable results.
+
+OOF score is decreased from 86.70 to 83.85 but LB score jumped to 0.54.
+I thought this jump was related to Other class but the improvement wasn't good enough.
+That's when I thought private test set could have more Other classes which is very likely of Kaggle competitions.
+Twist of this competition was predicting TMAs and Other so private test set would likely have more of them.
+I decided to trust LB and selected a submission with the highest LB score.
+That submission scored 0.54 on public and 0.58 on private.
