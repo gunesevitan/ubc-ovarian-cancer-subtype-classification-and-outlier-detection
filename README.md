@@ -209,9 +209,7 @@ and image type distribution was like this
 * TMA: 2594
 
 All the external data are concatenated to each fold's training sets.
-Validation sets are not changed in order to get comparable results.
-
-OOF score is decreased from 86.70 to 83.85 but LB score jumped to 0.54.
+Validation sets are not changed in order to get comparable results. OOF score is decreased from 86.70 to 83.85 but LB score jumped to 0.54.
 I thought this jump was related to Other class but the improvement wasn't good enough.
 That's when I thought private test set could have more Other classes which is very likely of Kaggle competitions.
 Twist of this competition was predicting TMAs and Other so private test set would likely have more of them.
