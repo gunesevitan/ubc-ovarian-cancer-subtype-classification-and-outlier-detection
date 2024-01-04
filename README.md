@@ -1,11 +1,16 @@
 # UBC Ovarian Cancer Subtype Classification and Outlier Detection (UBC-OCEAN)
 
 This was an interesting competition and I would like to thank everyone involved with the organization of it.
-This is a simple textbook strong label solution that heavily relies on external TMA data.
+This is a simple textbook solution that heavily relies on external TMA data and strong labels.
 
+* [Inference](https://www.kaggle.com/code/gunesevitan/ubc-ocean-inference)
+* [libvips/pyvips Installation and Getting Started](https://www.kaggle.com/code/gunesevitan/libvips-pyvips-installation-and-getting-started)
+* [UBC-OCEAN - JPEG Dataset Pipeline](https://www.kaggle.com/code/gunesevitan/ubc-ocean-jpeg-dataset-pipeline)
+* [UBC-OCEAN - EDA](https://www.kaggle.com/code/gunesevitan/ubc-ocean-eda)
+* [UBC-OCEAN - Dataset](https://www.kaggle.com/datasets/gunesevitan/ubc-ocean-dataset)
+* [GitHub Repository](https://github.com/gunesevitan/ubc-ovarian-cancer-subtype-classification-and-outlier-detection)
 
-
-## Raw Dataset
+## 1. Raw Dataset
 
 ### WSI
 
@@ -62,17 +67,17 @@ def drop_low_std(image, threshold):
 
 ![seg2](https://i.ibb.co/8jCyhgG/4134-crop.png)
 
-## Validation
+## 2. Validation
 
 Multi-label stratified kfold is used as the cross-validation scheme.
 Dataset is split into 5 folds.
 label and is_tma columns are used for stratification.
 
-## Models
+## 3. Models
 
 EfficientNetV2 small model is used as the backbone with a regular classification head.
 
-## Training
+## 4. Training
 
 CrossEntropyLoss with class weights are used as the loss function.
 Class weights are calculated as n / n ith class.
@@ -83,3 +88,119 @@ Cosine annealing scheduler is used with 0.00001 minimum learning rate.
 AMP is also used for faster training and regularization.
 
 Each fold is trained for 15 epochs and epochs with highest balanced accuracy are selected.
+
+Training transforms are:
+
+* Resize TMAs to size 1024 (WSI crops are already 1024 sized)
+* Magnification normalization (resize WSI to 512 and resize it back to 1024 with a random chance)
+* Horizontal flip
+* Vertical flip
+* Random 90-degree rotation
+* Shift scale rotate with 45-degree rotations and mild shift and scale augmentation
+* Color jitter with strong hue and saturation
+* Channel shuffle
+* Gaussian blur
+* Coarse dropout (cutout)
+* ImageNet normalization
+
+## 5. Inference
+
+5 folds of EfficientNetV2 small model are used in the inference pipeline.
+Average of 5 folds are taken after predicting with each model.
+
+3x TTA (horizontal, vertical and diagonal) are applied and average of predictions are taken.
+
+16 crops are extracted for each WSI and average of their predictions are taken.
+
+The average pooling order for a single image is:
+* Predict original and flipped images, activate predictions with softmax and average
+* Predict with all folds and average
+* Predict all crops and average if WSI 
+
+## 6. Change of Direction
+
+The model had 86.70 OOF score (TMA: 84, WSI: 86.59) at that point but the LB score was 0.47 (private 0.52/32th-42th) which was very low.
+
+![wsi_confusion_matrix1](https://i.ibb.co/tQRgZd0/wsi-confusion-matrix.png)
+
+![tma_confusion_matrix1](https://i.ibb.co/YQPDY2D/tma-confusion-matrix.png)
+
+![confusion_matrix1](https://i.ibb.co/zhsGR9x/confusion-matrix.png)
+
+I noticed some people were getting better LB scores with worse OOF scores and I was stuck at 0.47 for a while.
+I had worked on Optiver competition for 2 weeks and came back.
+I decided to dedicate my time to finding external data because breaking the entire pipeline and starting from scratch didn't make sense.
+
+## 7. External Data
+
+### UBC Ocean
+The most obvious one is the test set image that is classified as HGSC confidently.
+16 crops are extracted from that image and HGSC label is assigned to them.
+
+### Stanford Tissue Microarray Database
+
+134 ovarian cancer TMAs are downloaded from [here](https://tma.im/cgi-bin/viewArrayBlockList.pl).
+
+Classes are converted with this mapping
+
+```
+CLASS_MAPPING = {
+    'fibroma of ovary spindle cell fibroma of ovary': 'Other',
+    'carcinoma papillary serous': 'HGSC',
+    'carcinoma endometrioid': 'EC',
+    'lymphoma precursor B lymphoblastic': 'Other',
+    'carcinoma adeno': 'HGSC',
+    'carcinoma clear cell': 'CC',
+    'carcinoma mucinous': 'MC',
+    'carcinoma adeno mucinous': 'MC',
+    'seminoma dysgerminoma': 'Other'
+}
+```
+
+### kztymsrjx9
+
+This dataset is downloaded from [here](https://data.mendeley.com/datasets/kztymsrjx9/1).
+HGSC label is assigned to images in the Serous directory.
+Images in the Non_Cancerous directory are not used.
+398 ovarian cancer TMAs are found here.
+
+### tissuearray.com
+
+Screenshots of high resolution previews are taken from [here](https://www.tissuearray.com/tissue-arrays/Ovary).
+1221 ovarian cancer TMAs are found here.
+
+### usbiolab.com
+
+Screenshots of high resolution previews are taken from [here](https://usbiolab.com/tissue-array/product/ovary).
+440 ovarian cancer TMAs are found here.
+
+### proteinatlas.org
+
+Images are downloaded from [here](https://www.proteinatlas.org/search/prognostic:ovarian+cancer;Favorable+AND+sort_by:prognostic+ovarian+cancer).
+376 ovarian cancer TMAs are found here.
+
+### Summary
+
+Those were the sources where I found external data.
+
+|                                     | Images | Type | HGSC | EC  | CC  | LGSC | MC  | Other |
+|-------------------------------------|--------|------|------|-----|-----|------|-----|-------|
+| UBC Ocean Public Test               | 16     | WSI  | 16   | 0   | 0   | 0    | 0   | 0     |
+| Stanford Tissue Microarray Database | 134    | TMA  | 37   | 11  | 4   | 0    | 4   | 78    |
+| kztymsrjx9                          | 398    | TMA  | 100  | 98  | 100 | 0    | 100 | 0     |
+| tissuearray.com                     | 1221   | TMA  | 348  | 39  | 24  | 140  | 100 | 570   |
+| usbiolab.com                        | 440    | TMA  | 124  | 40  | 29  | 89   | 68  | 90    |
+| proteinatlas.org                    | 376    | TMA  | 25   | 155 | 0   | 63   | 133 | 0     |
+
+## 8. Final Iteration
+
+Final dataset label distribution was like this
+
+* HGSC: 4127
+* EC: 2252
+* CC: 1666
+* MC: 1066
+* LGSC: 969
+* Other: 738
+
+and the model was predicting Other class.
